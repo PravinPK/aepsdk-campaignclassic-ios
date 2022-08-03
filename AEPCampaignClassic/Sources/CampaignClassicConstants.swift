@@ -11,12 +11,12 @@
  */
 
 import Foundation
+import AEPCore
 
 enum CampaignClassicConstants {
     static let EXTENSION_NAME                           = "com.adobe.module.campaignclassic"
     static let FRIENDLY_NAME                            = "CampaignClassic"
     static let EXTENSION_VERSION                        = "3.0.0"
-    static let DATASTORE_NAME                           = EXTENSION_NAME
     static let LOG_TAG                                  = FRIENDLY_NAME
 
     // general strings
@@ -28,7 +28,8 @@ enum CampaignClassicConstants {
     static let REGISTER_PARAM_DEVICE_MANUFACTURER_APPLE = REGISTER_PARAM_DEVICE_BRAND_APPLE
     static let TRACK_RECEIVE_TAGID = "1"
     static let TRACK_CLICK_TAGID = "2"
-    static let CONTENT_TYPE_UTF8_CHARSET = "charset=UTF-8"
+    static let HEADER_CONTENT_TYPE_UTF8_CHARSET = "charset=UTF-8"
+    static let HEADER_KEY_CONTENT_LENGTH = "Content-Length"
 
     enum DatastoreKeys {
         static let TOKEN_HASH = "ADOBEMOBILE_STOREDDEFAULTS_TOKENHASH"
@@ -38,6 +39,11 @@ enum CampaignClassicConstants {
     enum SDKEventType {
         // to be moved to Core EventType
         static let CAMPAIGN_CLASSIC = "com.adobe.eventType.campaignClassic"
+    }
+    
+    enum Default {
+        static let PRIVACY_STATUS: PrivacyStatus = .unknown
+        static let NETWORK_TIMEOUT = TimeInterval(30)
     }
 
     enum EventDataKeys {
@@ -63,7 +69,7 @@ enum CampaignClassicConstants {
         }
 
         enum Configuration {
-            static let SHARED_STATE_NAME = "com.adobe.module.configuration"
+            static let NAME = "com.adobe.module.configuration"
             static let GLOBAL_CONFIG_PRIVACY = "global.privacy"
             static let CAMPAIGNCLASSIC_NETWORK_TIMEOUT = "campaignclassic.timeout"
             static let CAMPAIGNCLASSIC_MARKETING_SERVER = "campaignclassic.marketingServer"

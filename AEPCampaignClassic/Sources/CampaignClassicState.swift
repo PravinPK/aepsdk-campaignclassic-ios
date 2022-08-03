@@ -23,7 +23,7 @@ class CampaignClassicState {
 
     /// Creates a new `CampaignState`.
     init() {
-        self.dataStore = NamedCollectionDataStore(name: CampaignClassicConstants.DATASTORE_NAME)
+        self.dataStore = NamedCollectionDataStore(name: CampaignClassicConstants.EXTENSION_NAME)
     }
 
 }

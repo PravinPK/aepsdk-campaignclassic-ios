@@ -45,24 +45,22 @@ class CampaignClassicRegistrationManager {
         
         // prepare and send registration network request
         let payload = prepareRegistrationPayload(event, deviceToken, lifecycleData)
-        let headers = [HttpConnectionConstants.Header.HTTP_HEADER_KEY_CONTENT_TYPE : HttpConnectionConstants.Header.HTTP_HEADER_CONTENT_TYPE_WWW_FORM_URLENCODED + ";" + CampaignClassicConstants.HEADER_CONTENT_TYPE_UTF8_CHARSET, CampaignClassicConstants.HEADER_KEY_CONTENT_LENGTH : payload.count]
+        let headers = [HttpConnectionConstants.Header.HTTP_HEADER_KEY_CONTENT_TYPE : HttpConnectionConstants.Header.HTTP_HEADER_CONTENT_TYPE_WWW_FORM_URLENCODED + ";" + CampaignClassicConstants.HEADER_CONTENT_TYPE_UTF8_CHARSET, CampaignClassicConstants.HEADER_KEY_CONTENT_LENGTH : String(payload.count)]
         let urlString = String(format: CampaignClassicConstants.REGISTRATION_API_URL_BASE, marketingServer)
         guard let url = URL(string: urlString) else {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to send device registration request, Invalid network request URL : \(urlString)")
+            return false
         }
         
-        
         let request = NetworkRequest(url: url, httpMethod: .post, connectPayload: payload, httpHeaders: headers, connectTimeout: configuration.timeout, readTimeout: configuration.timeout)
-        
-        networkService.connectAsync(networkRequest: request, completionHandler: { connection in
+        ServiceProvider.shared.networkService.connectAsync(networkRequest: request, completionHandler: { connection in
             if connection.responseCode == 200 {
-                Log.debug(label: CampaignClassicConstants.LOG_TAG, "TrackNotification success. URL : \(trackingUrl.absoluteString)")
+                Log.debug(label: CampaignClassicConstants.LOG_TAG, "Device Registration success. URL : \(url.absoluteString)")
             }
             
-            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to trackNotification, Network Error. Response Code: \(String(describing: connection.responseCode)) URL : \(trackingUrl.absoluteString)")
+            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to register device, Network Error. Response Code: \(String(describing: connection.responseCode)) URL : \(url.absoluteString)")
         })
-        
-        
+                
         
         return false
     }

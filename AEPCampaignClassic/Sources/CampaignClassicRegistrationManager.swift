@@ -22,25 +22,25 @@ class CampaignClassicRegistrationManager {
 
     }
 
-    func registerDevice(withConfig configuration: CampaignClassicConfiguration, _ lifecycleData: [String: Any]?, _ event: Event) -> Bool {
+    func registerDevice(withConfig configuration: CampaignClassicConfiguration, _ lifecycleData: [String: Any]?, _ event: Event) {
         guard let deviceToken = event.deviceToken else {
-            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to send device registration request, device token is not available.")
-            return false
+            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Device Registration failed, device token is not available.")
+            return
         }
 
         guard let integrationKey = configuration.integrationKey, let marketingServer = configuration.marketingServer else {
-            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to send device registration request, `campaignclassic.ios.integrationKey` and/or campaignclassic.ios.marketingServer` configuration keys are unavailable.")
-            return false
+            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Device Registration failed, `campaignclassic.ios.integrationKey` and/or campaignclassic.ios.marketingServer` configuration keys are unavailable.")
+            return
         }
 
         if configuration.privacyStatus != PrivacyStatus.optedIn {
-            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to send device registration request, MobilePrivacyStatus is not optedIn.")
-            return false
+            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Device Registration failed, MobilePrivacyStatus is not optedIn.")
+            return
         }
 
         if !registrationInfoChanged(event, deviceToken, integrationKey, marketingServer) {
-            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Not sending device registration request, there is no change in registration info since last successful request.")
-            return false
+            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Device Registration failed, there is no change in registration info since last successful request.")
+            return
         }
 
         // prepare and send registration network request
@@ -48,8 +48,8 @@ class CampaignClassicRegistrationManager {
         let headers = [HttpConnectionConstants.Header.HTTP_HEADER_KEY_CONTENT_TYPE: HttpConnectionConstants.Header.HTTP_HEADER_CONTENT_TYPE_WWW_FORM_URLENCODED + ";" + CampaignClassicConstants.HEADER_CONTENT_TYPE_UTF8_CHARSET, CampaignClassicConstants.HEADER_KEY_CONTENT_LENGTH: String(payload.count)]
         let urlString = String(format: CampaignClassicConstants.REGISTRATION_API_URL_BASE, marketingServer)
         guard let url = URL(string: urlString) else {
-            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to send device registration request, Invalid network request URL : \(urlString)")
-            return false
+            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Device Registration failed, Invalid network request URL : \(urlString)")
+            return
         }
 
         let request = NetworkRequest(url: url, httpMethod: .post, connectPayload: payload, httpHeaders: headers, connectTimeout: configuration.timeout, readTimeout: configuration.timeout)
@@ -58,10 +58,10 @@ class CampaignClassicRegistrationManager {
                 Log.debug(label: CampaignClassicConstants.LOG_TAG, "Device Registration success. URL : \(url.absoluteString)")
             }
 
-            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to register device, Network Error. Response Code: \(String(describing: connection.responseCode)) URL : \(url.absoluteString)")
+            Log.debug(label: CampaignClassicConstants.LOG_TAG, "Device Registration failed, Network Error. Response Code: \(String(describing: connection.responseCode)) URL : \(url.absoluteString)")
         })
 
-        return false
+        return
     }
 
     private func registrationInfoChanged(_ event: Event,

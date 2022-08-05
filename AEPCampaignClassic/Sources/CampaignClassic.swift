@@ -80,7 +80,7 @@ public class CampaignClassic: NSObject, Extension {
     private func handleRegisterDeviceEvent(event: Event) {
         let lifecycleData = runtime.getSharedState(extensionName: CampaignClassicConstants.EventDataKeys.Lifecycle.EXTENSION_NAME, event: event, barrier: false)?.value
         let configuration = CampaignClassicConfiguration.init(forEvent: event, runtime: runtime)
-        let status = registrationManager.registerDevice(withConfig: configuration, lifecycleData, event)
+        registrationManager.registerDevice(withConfig: configuration, lifecycleData, event)
     }
 
     private func handleTrackEvent(event: Event, withTagId tagId: String) {

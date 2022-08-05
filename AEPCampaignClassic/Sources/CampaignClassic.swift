@@ -45,7 +45,7 @@ public class CampaignClassic: NSObject, Extension {
     /// Invoked when the Campaign Classic extension has been registered by the `EventHub`
     public func onRegistered() {
         registerListener(type: EventType.configuration, source: EventSource.responseContent, listener: handleConfigurationEvents)
-        registerListener(type: CampaignClassicConstants.SDKEventType.CAMPAIGN_CLASSIC, source: EventSource.requestContent, listener: handleConfigurationEvents)
+        registerListener(type: EventType.campaign, source: EventSource.requestContent, listener: handleConfigurationEvents)
     }
 
     /// Invoked when the CampaignClassic extension has been unregistered by the `EventHub`, currently a no-op.

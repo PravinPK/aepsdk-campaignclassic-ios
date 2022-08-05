@@ -36,9 +36,10 @@ enum CampaignClassicConstants {
         static let REGISTER_STATUS = "ADOBEMOBILE_STOREDDEFAULTS_REGISTERSTATUS"
     }
 
-    enum SDKEventType {
-        // to be moved to Core EventType
-        static let CAMPAIGN_CLASSIC = "com.adobe.eventType.campaignClassic"
+    enum EventName {
+        static let REGISTER_DEVICE = "CampaignClassic Device Registration"
+        static let TRACK_NOTIFICATION_CLICK = "CampaignClassic Track Notification Click"
+        static let TRACK_NOTIFICATION_RECEIVE = "CampaignClassic Track Notification Receive"
     }
     
     enum Default {

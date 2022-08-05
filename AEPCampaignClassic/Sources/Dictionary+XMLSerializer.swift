@@ -13,14 +13,13 @@
 import Foundation
 import AEPServices
 
-class CampaignClassicXMLSerializer {
+extension Dictionary where Key == String, Value == AnyCodable {
 
-    /// Creates xml string from the provided variant map.
-    /// - Parameter map : a dictionary containing AnyCodable key value pairs
-    /// - Returns: string in campaign classic xml format
-    static func serializeToXMLString(map: [String: AnyCodable]) -> String {
+
+    /// - Returns  : A serialized campaign classic xml formatted string.
+    func serializeToXMLString() -> String {
         var xmlString = ""
-        for(key, value) in map {
+        for(key, value) in self {
             if let stringValue = getStringFromAnyCodable(anyCodable: value) {
                 xmlString.append("<param name=\"\(escapeString(key))\" value=\"\(escapeString(stringValue))\" />")
             }
@@ -29,7 +28,12 @@ class CampaignClassicXMLSerializer {
     }
 
     /// Retrieves string value from AnyCodable
-    private static func getStringFromAnyCodable(anyCodable: AnyCodable) -> String? {
+    /// Only String, Double, Bool, Float and Int AnyCodable values are converted to String.
+    /// Other types are ignored and nil is returned.
+    ///
+    /// - Parameter anyCodable: An `AnyCodable`value that needs to be unwrapped
+    /// - Returns : A String value of the `Anycodable` input
+    private func getStringFromAnyCodable(anyCodable: AnyCodable) -> String? {
         if let value = anyCodable.value {
             switch value {
             case is String:
@@ -50,7 +54,7 @@ class CampaignClassicXMLSerializer {
     }
 
     /// Creates escaped string from given input string
-    private static func escapeString(_ input: String) -> String {
+    private func escapeString(_ input: String) -> String {
         var escapedString = input
         escapedString = escapedString.replacingOccurrences(of: "\r", with: "")
         escapedString = escapedString.replacingOccurrences(of: "\n", with: "")

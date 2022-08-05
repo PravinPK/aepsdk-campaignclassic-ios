@@ -14,46 +14,46 @@ import AEPServices
 import Foundation
 
 extension Event {
-    
+
     var isRegisterEvent: Bool {
         return data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.REGISTER_DEVICE] as? Bool ?? false
     }
-    
+
     var isTrackClickEvent: Bool {
         return data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.TRACK_CLICK] as? Bool ?? false
     }
-    
+
     var isTrackReceiveEvent: Bool {
         return data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.TRACK_RECEIVE] as? Bool ?? false
     }
-    
+
     var broadlogId: String? {
-        if let trackingInfo = data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.TRACK_INFO] as? [String : Any] {
+        if let trackingInfo = data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.TRACK_INFO] as? [String: Any] {
             return trackingInfo[CampaignClassicConstants.EventDataKeys.CampaignClassic.TRACK_INFO_KEY_BROADLOG_ID] as? String
         }
         return nil
     }
-    
+
     var deliveryId: String? {
-        if let trackingInfo = data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.TRACK_INFO] as? [String : Any] {
+        if let trackingInfo = data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.TRACK_INFO] as? [String: Any] {
             return trackingInfo[CampaignClassicConstants.EventDataKeys.CampaignClassic.TRACK_INFO_KEY_DELIVERY_ID] as? String
         }
         return nil
     }
-    
+
     var deviceToken: String? {
         return data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.DEVICE_TOKEN] as? String
     }
-    
+
     var userKey: String? {
         return data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.USER_KEY] as? String
     }
-    
-    var additionalParameters: [String : AnyCodable]? {
-        return data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.ADDITIONAL_PARAMETERS] as? [String : AnyCodable]
+
+    var additionalParameters: [String: AnyCodable]? {
+        return data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.ADDITIONAL_PARAMETERS] as? [String: AnyCodable]
     }
-    
-    var deviceInfo: [String : String]? {
-        return data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.ADDITIONAL_PARAMETERS] as? [String : String]
+
+    var deviceInfo: [String: String]? {
+        return data?[CampaignClassicConstants.EventDataKeys.CampaignClassic.ADDITIONAL_PARAMETERS] as? [String: String]
     }
 }

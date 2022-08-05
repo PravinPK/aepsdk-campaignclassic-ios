@@ -22,13 +22,11 @@ public class CampaignClassic: NSObject, Extension {
     public static let extensionVersion = CampaignClassicConstants.EXTENSION_VERSION
     public var metadata: [String: String]?
     public var runtime: ExtensionRuntime
-    
+
     var state: CampaignClassicState
-    let registrationManager : CampaignClassicRegistrationManager
+    let registrationManager: CampaignClassicRegistrationManager
     let dispatchQueue: DispatchQueue
-    
-    
-    
+
     private var networkService: Networking {
         return ServiceProvider.shared.networkService
     }
@@ -61,14 +59,14 @@ public class CampaignClassic: NSObject, Extension {
         }
         return configurationSharedState.status == .set
     }
-    
+
     /// Handles `Configuration Response` events
     /// - Parameter event: the Configuration `Event` to be handled
     private func handleCampaignClassicEvents(event: Event) {
         Log.trace(label: CampaignClassicConstants.LOG_TAG, "An event of type '\(event.type)' has been received.")
         dispatchQueue.async { [weak self] in
             guard let self = self else {return}
-            
+
             if event.isRegisterEvent {
                 self.handleRegisterDeviceEvent(event: event)
             } else if event.isTrackClickEvent {
@@ -78,58 +76,57 @@ public class CampaignClassic: NSObject, Extension {
             }
         }
     }
-    
+
     private func handleRegisterDeviceEvent(event: Event) {
         let lifecycleData = runtime.getSharedState(extensionName: CampaignClassicConstants.EventDataKeys.Lifecycle.EXTENSION_NAME, event: event, barrier: false)?.value
         let configuration = CampaignClassicConfiguration.init(forEvent: event, runtime: runtime)
-        let status = registrationManager.registerDevice(withConfig: configuration, lifecycleData ,event)
+        let status = registrationManager.registerDevice(withConfig: configuration, lifecycleData, event)
     }
-    
-    private func handleTrackEvent(event: Event, withTagId tagId : String) {
+
+    private func handleTrackEvent(event: Event, withTagId tagId: String) {
         let configuration = CampaignClassicConfiguration.init(forEvent: event, runtime: runtime)
-        
+
         guard let trackingServer = configuration.trackingServer else {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to process TrackNotification request, Configuration not available.")
             return
         }
-        
+
         if configuration.privacyStatus != PrivacyStatus.optedIn {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to process TrackNotification request, MobilePrivacyStatus is not optedIn.")
             return
         }
-                
+
         guard let deliveryId = event.deliveryId else {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to process TrackNotification request, trackingInfo deliveryId is nil (missing key `_dId` from tracking Info).")
             return
         }
-        
+
         guard let broadlogId = event.broadlogId else {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to process TrackNotification request, trackingInfo broadLogId is nil (missing key `_mId` from tracking Info).")
             return
         }
-        
+
         guard let transformedBroadlogId = transformBroadLogId(broadlogId) else {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "TrackingInfo broadLogId is nil (Missing key `_mId` from tracking Info), discarding the campaign classic track event.")
             return
         }
-        
+
         guard let trackingUrl = URL(string: String(format: CampaignClassicConstants.TRACKING_API_URL_BASE, trackingServer, transformedBroadlogId, deliveryId, tagId)) else {
             return
         }
-        
+
         let request = NetworkRequest(url: trackingUrl, httpMethod: .get, connectPayload: "", httpHeaders: [:], connectTimeout: configuration.timeout, readTimeout: configuration.timeout)
-        
+
         networkService.connectAsync(networkRequest: request, completionHandler: { connection in
             if connection.responseCode == 200 {
                 Log.debug(label: CampaignClassicConstants.LOG_TAG, "TrackNotification success. URL : \(trackingUrl.absoluteString)")
             }
-            
+
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to trackNotification, Network Error. Response Code: \(String(describing: connection.responseCode)) URL : \(trackingUrl.absoluteString)")
         })
     }
-    
-    
-    private func transformBroadLogId(_ broadlogId : String) -> String? {
+
+    private func transformBroadLogId(_ broadlogId: String) -> String? {
         if let _ = UUID(uuidString: broadlogId) {
             return broadlogId
         }
@@ -158,28 +155,27 @@ public class CampaignClassic: NSObject, Extension {
     }
 }
 
-
 struct CampaignClassicConfiguration {
-    var integrationKey : String?
-    var marketingServer : String?
-    var trackingServer : String?
-    var timeout : TimeInterval = CampaignClassicConstants.Default.NETWORK_TIMEOUT
-    var privacyStatus : PrivacyStatus = CampaignClassicConstants.Default.PRIVACY_STATUS
-    
-    init(forEvent event: Event,runtime : ExtensionRuntime){
-            guard let configSharedState = runtime.getSharedState(extensionName: CampaignClassicConstants.EventDataKeys.Configuration.NAME, event: event, barrier: false)?.value else {
-                return
-            }
-            
-            integrationKey = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_INTEGRATION_KEY] as? String
-            marketingServer = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_MARKETING_SERVER] as? String
-            trackingServer = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_TRACKING_SERVER] as? String
-            timeout = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_TRACKING_SERVER] as? TimeInterval ?? CampaignClassicConstants.Default.NETWORK_TIMEOUT
-            let privacyStatusString = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_TRACKING_SERVER] as? String ?? ""
-            privacyStatus = PrivacyStatus.init(rawValue: configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.GLOBAL_CONFIG_PRIVACY] as? PrivacyStatus.RawValue ?? CampaignClassicConstants.Default.PRIVACY_STATUS.rawValue) ?? CampaignClassicConstants.Default.PRIVACY_STATUS
+    var integrationKey: String?
+    var marketingServer: String?
+    var trackingServer: String?
+    var timeout: TimeInterval = CampaignClassicConstants.Default.NETWORK_TIMEOUT
+    var privacyStatus: PrivacyStatus = CampaignClassicConstants.Default.PRIVACY_STATUS
 
-            privacyStatus = PrivacyStatus(rawValue: privacyStatusString)!
-        
+    init(forEvent event: Event, runtime: ExtensionRuntime) {
+        guard let configSharedState = runtime.getSharedState(extensionName: CampaignClassicConstants.EventDataKeys.Configuration.NAME, event: event, barrier: false)?.value else {
+            return
+        }
+
+        integrationKey = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_INTEGRATION_KEY] as? String
+        marketingServer = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_MARKETING_SERVER] as? String
+        trackingServer = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_TRACKING_SERVER] as? String
+        timeout = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_TRACKING_SERVER] as? TimeInterval ?? CampaignClassicConstants.Default.NETWORK_TIMEOUT
+        let privacyStatusString = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_TRACKING_SERVER] as? String ?? ""
+        privacyStatus = PrivacyStatus.init(rawValue: configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.GLOBAL_CONFIG_PRIVACY] as? PrivacyStatus.RawValue ?? CampaignClassicConstants.Default.PRIVACY_STATUS.rawValue) ?? CampaignClassicConstants.Default.PRIVACY_STATUS
+
+        privacyStatus = PrivacyStatus(rawValue: privacyStatusString)!
+
     }
-    
+
 }

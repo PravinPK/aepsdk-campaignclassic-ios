@@ -15,7 +15,6 @@ import AEPServices
 
 extension Dictionary where Key == String, Value == AnyCodable {
 
-
     /// - Returns  : A serialized campaign classic xml formatted string.
     func serializeToXMLString() -> String {
         var xmlString = ""

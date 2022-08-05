@@ -41,7 +41,7 @@ enum CampaignClassicConstants {
         static let TRACK_NOTIFICATION_CLICK = "CampaignClassic Track Notification Click"
         static let TRACK_NOTIFICATION_RECEIVE = "CampaignClassic Track Notification Receive"
     }
-    
+
     enum Default {
         static let PRIVACY_STATUS: PrivacyStatus = .unknown
         static let NETWORK_TIMEOUT = TimeInterval(30)

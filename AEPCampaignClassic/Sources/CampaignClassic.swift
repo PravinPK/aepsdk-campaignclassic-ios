@@ -43,7 +43,7 @@ public class CampaignClassic: NSObject, Extension {
     /// Invoked when the Campaign Classic extension has been registered by the `EventHub`
     public func onRegistered() {
         registerListener(type: EventType.configuration, source: EventSource.responseContent, listener: handleConfigurationEvents)
-        registerListener(type: EventType.campaign, source: EventSource.requestContent, listener: handleConfigurationEvents)
+        registerListener(type: EventType.campaign, source: EventSource.requestContent, listener: handleCampaignClassicEvents(event:))
     }
 
     /// Invoked when the CampaignClassic extension has been unregistered by the `EventHub`, currently a no-op.
@@ -86,7 +86,7 @@ public class CampaignClassic: NSObject, Extension {
     private func handleTrackEvent(event: Event, withTagId tagId: String) {
         let configuration = CampaignClassicConfiguration.init(forEvent: event, runtime: runtime)
 
-        guard let trackingServer = configuration.trackingServer else {
+        guard let trackingServer = configuration.trackingServer, !trackingServer.isEmpty else {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to process TrackNotification request, Configuration not available.")
             return
         }
@@ -96,16 +96,18 @@ public class CampaignClassic: NSObject, Extension {
             return
         }
 
-        guard let deliveryId = event.deliveryId else {
+        guard let deliveryId = event.deliveryId, !deliveryId.isEmpty else {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to process TrackNotification request, trackingInfo deliveryId is nil (missing key `_dId` from tracking Info).")
             return
         }
 
-        guard let broadlogId = event.broadlogId else {
+        guard let broadlogId = event.broadlogId, !broadlogId.isEmpty else {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to process TrackNotification request, trackingInfo broadLogId is nil (missing key `_mId` from tracking Info).")
             return
         }
 
+        // V8 message Id is received in UUID format while V7 still comes as an integer(decimal) represented as a string.
+        // No transformation is required for the V8 UUID however for V7, message Id is parsed as an integer and converted to hex string.
         guard let transformedBroadlogId = transformBroadLogId(broadlogId) else {
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "TrackingInfo broadLogId is nil (Missing key `_mId` from tracking Info), discarding the campaign classic track event.")
             return
@@ -120,6 +122,7 @@ public class CampaignClassic: NSObject, Extension {
         networkService.connectAsync(networkRequest: request, completionHandler: { connection in
             if connection.responseCode == 200 {
                 Log.debug(label: CampaignClassicConstants.LOG_TAG, "TrackNotification success. URL : \(trackingUrl.absoluteString)")
+                return
             }
 
             Log.debug(label: CampaignClassicConstants.LOG_TAG, "Unable to trackNotification, Network Error. Response Code: \(String(describing: connection.responseCode)) URL : \(trackingUrl.absoluteString)")
@@ -130,7 +133,13 @@ public class CampaignClassic: NSObject, Extension {
         if let _ = UUID(uuidString: broadlogId) {
             return broadlogId
         }
-        return broadlogId
+
+        let broadLogIdInt = Int(broadlogId)
+        guard let broadLogIdInt = broadLogIdInt else {
+            return nil
+        }
+
+        return String(format: "%02X", broadLogIdInt)
     }
 
     /// Handles `Configuration Response` events
@@ -170,8 +179,11 @@ struct CampaignClassicConfiguration {
         integrationKey = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_INTEGRATION_KEY] as? String
         marketingServer = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_MARKETING_SERVER] as? String
         trackingServer = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_TRACKING_SERVER] as? String
-        timeout = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_TRACKING_SERVER] as? TimeInterval ?? CampaignClassicConstants.Default.NETWORK_TIMEOUT
-        let privacyStatusString = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_TRACKING_SERVER] as? String ?? ""
+        if let timeOutInt = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.CAMPAIGNCLASSIC_NETWORK_TIMEOUT] as? Int {
+            timeout = TimeInterval(timeOutInt)
+        }
+
+        let privacyStatusString = configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.GLOBAL_CONFIG_PRIVACY] as? String ?? ""
         privacyStatus = PrivacyStatus.init(rawValue: configSharedState[CampaignClassicConstants.EventDataKeys.Configuration.GLOBAL_CONFIG_PRIVACY] as? PrivacyStatus.RawValue ?? CampaignClassicConstants.Default.PRIVACY_STATUS.rawValue) ?? CampaignClassicConstants.Default.PRIVACY_STATUS
 
         privacyStatus = PrivacyStatus(rawValue: privacyStatusString)!

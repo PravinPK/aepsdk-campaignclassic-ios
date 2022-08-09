@@ -22,7 +22,7 @@ enum CampaignClassicConstants {
     // general strings
     static let DATASTORE_KEY = "ADOBEMOBILE_CAMPAIGNCLASSIC"
     static let REGISTRATION_API_URL_BASE = "https://%s/nms/mobile/1/registerIOS.jssp"
-    static let TRACKING_API_URL_BASE = "https://%s/r/?id=h%s,%s,%s"
+    static let TRACKING_API_URL_BASE = "https://%@/r/?id=h%@,%@,%@"
     static let REGISTER_PARAMS_FORMAT = "registrationToken=%s&mobileAppUuid=%s&userKey=%s&deviceName=%s&deviceModel=%s&deviceBrand=%s&deviceManufacturer=%s&osName=%s&osVersion=%s&osLanguage=%s&additionalParams="
     static let REGISTER_PARAM_DEVICE_BRAND_APPLE = "Apple"
     static let REGISTER_PARAM_DEVICE_MANUFACTURER_APPLE = REGISTER_PARAM_DEVICE_BRAND_APPLE
